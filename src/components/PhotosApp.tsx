@@ -1,24 +1,67 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 interface PhotosAppProps {
   isFocused: boolean
   onExitFocused: () => void
 }
 
-// Placeholder colors for photo grid — replace with real photos later
-const PHOTO_COLORS = [
-  '#2d4a3e', '#4a2d3e', '#3e4a2d', '#2d3e4a',
-  '#4a3d2d', '#3d2d4a', '#2d4a4a', '#4a4a2d',
-  '#3a2a4a', '#2a4a3a', '#4a3a2a', '#2a3a4a',
-  '#3e3a2d', '#2d3e3a', '#3a3e2d', '#2d2d4a',
-  '#4a2d2d', '#2d4a2d', '#3a4a3a', '#4a3a4a',
+interface Photo {
+  src: string
+  label: string
+}
+
+interface PhotoGroup {
+  month: string
+  photos: Photo[]
+}
+
+const PHOTO_GROUPS: PhotoGroup[] = [
+  {
+    month: 'March 2025',
+    photos: [
+      { src: '/photo-whiteout.jpg', label: '2025 Whiteout' },
+      { src: '/photo-nyc.jpg', label: 'NYC Hackathon' },
+      { src: '/photo-golfcart.jpg', label: 'NittanyAI' },
+    ],
+  },
+  {
+    month: 'February 2025',
+    photos: [
+      { src: '/photo-pinstripe.jpg', label: 'Pinstripe Bowl' },
+      { src: '/photo-mlb.jpg', label: 'MLB Lecture' },
+    ],
+  },
+  {
+    month: 'January 2025',
+    photos: [
+      { src: '/photo-princeton.jpg', label: 'Princeton' },
+      { src: '/photo-cranium.jpg', label: 'Cranium Volunteering' },
+    ],
+  },
 ]
 
-const ALBUMS = ['Recents', 'Favorites', 'Videos', 'Portraits', 'Panoramas', 'Bursts']
+const ALL_PHOTOS = PHOTO_GROUPS.flatMap((g) => g.photos)
+
+const ALBUMS = [
+  { label: 'Recents',   thumb: '/photo-whiteout.jpg' },
+  { label: 'Favorites', thumb: '/photo-nyc.jpg' },
+  { label: 'Videos',    thumb: '/photo-pinstripe.jpg' },
+  { label: 'Portraits', thumb: '/photo-cranium.jpg' },
+  { label: 'Panoramas', thumb: '/photo-princeton.jpg' },
+  { label: 'Bursts',    thumb: '/photo-mlb.jpg' },
+]
+
+const PEOPLE = [
+  { src: '/people-me.png',      name: 'Zach' },
+  { src: '/people-anthony.png', name: 'Anthony' },
+  { src: '/people-damien.png',  name: 'Damien' },
+  { src: '/people-milo.png',    name: 'Milo' },
+]
 
 export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) {
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const exitDelta = useRef(0)
 
@@ -27,20 +70,23 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
       if (!isFocused) return
       const el = scrollRef.current
       if (!el) return
-
       const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 8
       if (atBottom && e.deltaY > 0) {
         exitDelta.current += e.deltaY
         if (exitDelta.current > 120) {
           exitDelta.current = 0
-          onExitFocused()
+          if (selectedPhoto) {
+            setSelectedPhoto(null)
+          } else {
+            onExitFocused()
+          }
         }
       } else {
         exitDelta.current = 0
         el.scrollTop += e.deltaY
       }
     },
-    [isFocused, onExitFocused],
+    [isFocused, onExitFocused, selectedPhoto],
   )
 
   return (
@@ -65,31 +111,56 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
         <div className="px-3 mb-3">
           <p className="text-[10px] font-semibold mb-2" style={{ color: '#8a8a8a' }}>MY ALBUMS</p>
           {ALBUMS.map((album) => (
-            <div key={album} className="flex items-center gap-2 px-2 py-[4px] text-[12px]" style={{ color: '#aaa' }}>
-              <div className="w-7 h-7 rounded-md flex-shrink-0" style={{ background: '#333' }} />
-              <span className="truncate">{album}</span>
+            <div key={album.label} className="flex items-center gap-2 px-2 py-[4px] text-[12px]" style={{ color: '#aaa' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={album.thumb} alt="" className="w-7 h-7 rounded-md flex-shrink-0 object-cover" draggable={false} />
+              <span className="truncate">{album.label}</span>
             </div>
           ))}
         </div>
         <div className="px-3">
           <p className="text-[10px] font-semibold mb-2" style={{ color: '#8a8a8a' }}>PEOPLE</p>
-          <div className="flex flex-wrap gap-2 px-1">
-            {['Zach', 'Friends', 'Family'].map((name) => (
-              <div key={name} className="flex flex-col items-center gap-1">
-                <div className="w-8 h-8 rounded-full" style={{ background: 'linear-gradient(135deg, #333, #444)' }} />
-                <span className="text-[9px]" style={{ color: '#666' }}>{name}</span>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-3 px-1">
+            {PEOPLE.map((person) => (
+              <div key={person.name} className="flex flex-col items-center gap-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={person.src}
+                  alt={person.name}
+                  className="rounded-full object-cover"
+                  style={{ width: 52, height: 52 }}
+                  draggable={false}
+                />
+                <span className="text-[10px]" style={{ color: '#aaa' }}>{person.name}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Main photo grid */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto" onWheel={handleWheel}>
-        <div className="px-4 pt-4 pb-2 flex items-center justify-between sticky top-0 z-10" style={{ background: '#1c1c1e' }}>
-          <h2 className="text-[16px] font-semibold" style={{ color: '#f0f0f0' }}>Library</h2>
+      {/* Main area */}
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#1c1c1e' }}>
+        {/* Toolbar */}
+        <div
+          className="flex-shrink-0 flex items-center justify-between px-4"
+          style={{ height: 44, borderBottom: '1px solid #2a2a2a', background: '#1c1c1e' }}
+        >
+          {selectedPhoto ? (
+            <button
+              onClick={() => setSelectedPhoto(null)}
+              className="flex items-center gap-1 text-[12px]"
+              style={{ color: '#0a84ff' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              All Photos
+            </button>
+          ) : (
+            <h2 className="text-[15px] font-semibold" style={{ color: '#f0f0f0' }}>Photos</h2>
+          )}
           <div className="flex gap-3">
-            {['Photos', 'Memories', 'Places'].map((tab) => (
+            {!selectedPhoto && ['Photos', 'Memories', 'Places'].map((tab) => (
               <button
                 key={tab}
                 className="text-[12px] px-3 py-1 rounded-full"
@@ -104,64 +175,92 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
           </div>
         </div>
 
-        <div className="px-4 pb-4">
-          <p className="text-[11px] font-semibold mb-3" style={{ color: '#8a8a8a' }}>
-            April 2025
-          </p>
-          <div className="grid grid-cols-5 gap-1">
-            {PHOTO_COLORS.map((color, i) => (
-              <div
-                key={i}
-                className="rounded-sm cursor-pointer hover:opacity-90 transition-opacity"
-                style={{ paddingTop: '100%', background: color, position: 'relative' }}
-              >
-                {i === 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg">🏔️</span>
-                  </div>
-                )}
-                {i === 4 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg">🏄</span>
-                  </div>
-                )}
-                {i === 7 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg">🎸</span>
-                  </div>
-                )}
-                {i === 11 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg">✈️</span>
-                  </div>
-                )}
-                {i === 15 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg">🎿</span>
-                  </div>
-                )}
+        {selectedPhoto ? (
+          /* Full photo view */
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto flex flex-col items-center"
+            style={{ background: '#111' }}
+            onWheel={handleWheel}
+          >
+            <div className="w-full max-w-2xl px-6 py-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedPhoto.src}
+                alt={selectedPhoto.label}
+                className="w-full rounded-lg"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
+                draggable={false}
+              />
+              <p className="text-[13px] font-medium mt-4 text-center" style={{ color: '#c8c8c8' }}>
+                {selectedPhoto.label}
+              </p>
+            </div>
+            {isFocused && (
+              <p className="text-[11px] text-center pb-6" style={{ color: '#333' }}>↓ Scroll to go back</p>
+            )}
+          </div>
+        ) : (
+          /* Grid view */
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pb-4" onWheel={handleWheel}>
+            {/* Featured large photo strip */}
+            <div className="pt-4 pb-5">
+              <p className="text-[11px] font-semibold mb-2" style={{ color: '#8a8a8a' }}>
+                {ALL_PHOTOS.length} Photos
+              </p>
+              <div className="grid grid-cols-5 gap-[2px]">
+                {ALL_PHOTOS.map((photo) => (
+                  <button
+                    key={photo.src}
+                    onClick={() => setSelectedPhoto(photo)}
+                    className="relative cursor-pointer overflow-hidden hover:opacity-90 transition-opacity"
+                    style={{ aspectRatio: '1/1' }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.src}
+                      alt={photo.label}
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* By month */}
+            {PHOTO_GROUPS.map((group) => (
+              <div key={group.month} className="mb-5">
+                <p className="text-[11px] font-semibold mb-2" style={{ color: '#8a8a8a' }}>
+                  {group.month}
+                </p>
+                <div className="grid grid-cols-5 gap-[2px]">
+                  {group.photos.map((photo) => (
+                    <button
+                      key={photo.src}
+                      onClick={() => setSelectedPhoto(photo)}
+                      className="relative cursor-pointer overflow-hidden hover:opacity-90 transition-opacity"
+                      style={{ aspectRatio: '1/1' }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.src}
+                        alt={photo.label}
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
-          </div>
 
-          <p className="text-[11px] font-semibold mb-3 mt-5" style={{ color: '#8a8a8a' }}>
-            March 2025
-          </p>
-          <div className="grid grid-cols-5 gap-1">
-            {PHOTO_COLORS.slice().reverse().map((color, i) => (
-              <div
-                key={i}
-                className="rounded-sm cursor-pointer hover:opacity-90 transition-opacity"
-                style={{ paddingTop: '100%', background: color }}
-              />
-            ))}
+            {isFocused && (
+              <p className="text-[11px] text-center py-4" style={{ color: '#333' }}>
+                ↓ Scroll to return to overview
+              </p>
+            )}
           </div>
-        </div>
-
-        {isFocused && (
-          <p className="text-[11px] text-center py-4" style={{ color: '#333' }}>
-            ↓ Scroll to return to overview
-          </p>
         )}
       </div>
     </div>

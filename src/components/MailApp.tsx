@@ -15,10 +15,15 @@ const INBOX = [
   { from: 'npm', subject: 'Package update available', time: 'Mon', preview: 'motion v11.2.0 is available', unread: false },
 ]
 
+type SendState = 'idle' | 'sending' | 'success' | 'error'
+
 export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
+  const [senderName, setSenderName] = useState('')
+  const [senderEmail, setSenderEmail] = useState('')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
-  const [sent, setSent] = useState(false)
+  const [sendState, setSendState] = useState<SendState>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
   const exitDelta = useRef(0)
 
@@ -43,12 +48,39 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
     [isFocused, onExitFocused],
   )
 
-  const handleSend = () => {
-    if (!subject || !body) return
-    setSent(true)
-    setTimeout(() => setSent(false), 3000)
-    setSubject('')
-    setBody('')
+  const canSend = senderName && senderEmail && subject && body && sendState !== 'sending'
+
+  const handleSend = async () => {
+    if (!canSend) return
+    setSendState('sending')
+    setErrorMsg('')
+
+    try {
+      const res = await fetch('/api/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senderName, senderEmail, subject, body }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setErrorMsg(data.error ?? 'Something went wrong.')
+        setSendState('error')
+        return
+      }
+
+      setSendState('success')
+      setSenderName('')
+      setSenderEmail('')
+      setSubject('')
+      setBody('')
+      setTimeout(() => setSendState('idle'), 4000)
+    } catch {
+      setErrorMsg('Network error. Please try again.')
+      setSendState('error')
+      setTimeout(() => setSendState('idle'), 4000)
+    }
   }
 
   return (
@@ -63,10 +95,10 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
             MAILBOXES
           </p>
           {[
-            { label: 'Inbox', count: 2, icon: '📥' },
-            { label: 'Sent', count: 0, icon: '📤' },
-            { label: 'Drafts', count: 1, icon: '📝' },
-            { label: 'Junk', count: 0, icon: '🗑️' },
+            { label: 'Inbox', count: 2 },
+            { label: 'Sent', count: 0 },
+            { label: 'Drafts', count: 1 },
+            { label: 'Junk', count: 0 },
           ].map((item) => (
             <div
               key={item.label}
@@ -120,29 +152,55 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
         ))}
       </div>
 
-      {/* Compose / detail */}
+      {/* Compose */}
       <div ref={scrollRef} className="flex-1 flex flex-col overflow-y-auto" onWheel={handleWheel}>
         <div className="px-6 pt-5 pb-3" style={{ borderBottom: '1px solid #3a3a3a' }}>
           <h3 className="text-[16px] font-semibold mb-1" style={{ color: '#f0f0f0' }}>New Message</h3>
           <p className="text-[12px]" style={{ color: '#8a8a8a' }}>Send me a message — I&apos;d love to hear from you.</p>
         </div>
 
-        <div className="flex-1 p-5">
-          {/* To field */}
-          <div className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid #3a3a3a' }}>
-            <span className="text-[12px] w-14 text-right flex-shrink-0" style={{ color: '#8a8a8a' }}>To:</span>
+        <div className="flex-1 p-5 flex flex-col gap-0">
+          {/* From name */}
+          <div className="flex items-center gap-3 py-[10px]" style={{ borderBottom: '1px solid #2d2d2d' }}>
+            <span className="text-[12px] w-20 text-right flex-shrink-0" style={{ color: '#8a8a8a' }}>Your name:</span>
+            <input
+              type="text"
+              value={senderName}
+              onChange={(e) => setSenderName(e.target.value)}
+              placeholder="Jane Smith"
+              className="flex-1 bg-transparent outline-none text-[13px] placeholder:text-[#444]"
+              style={{ color: '#e8e8e8' }}
+            />
+          </div>
+
+          {/* From email */}
+          <div className="flex items-center gap-3 py-[10px]" style={{ borderBottom: '1px solid #2d2d2d' }}>
+            <span className="text-[12px] w-20 text-right flex-shrink-0" style={{ color: '#8a8a8a' }}>Your email:</span>
+            <input
+              type="email"
+              value={senderEmail}
+              onChange={(e) => setSenderEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="flex-1 bg-transparent outline-none text-[13px] placeholder:text-[#444]"
+              style={{ color: '#e8e8e8' }}
+            />
+          </div>
+
+          {/* To */}
+          <div className="flex items-center gap-3 py-[10px]" style={{ borderBottom: '1px solid #2d2d2d' }}>
+            <span className="text-[12px] w-20 text-right flex-shrink-0" style={{ color: '#8a8a8a' }}>To:</span>
             <span className="text-[13px]" style={{ color: '#0a84ff' }}>zach.walnock@gmail.com</span>
           </div>
 
-          {/* Subject field */}
-          <div className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid #3a3a3a' }}>
-            <span className="text-[12px] w-14 text-right flex-shrink-0" style={{ color: '#8a8a8a' }}>Subject:</span>
+          {/* Subject */}
+          <div className="flex items-center gap-3 py-[10px]" style={{ borderBottom: '1px solid #2d2d2d' }}>
+            <span className="text-[12px] w-20 text-right flex-shrink-0" style={{ color: '#8a8a8a' }}>Subject:</span>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Enter subject..."
-              className="flex-1 bg-transparent outline-none text-[13px]"
+              placeholder="What's on your mind?"
+              className="flex-1 bg-transparent outline-none text-[13px] placeholder:text-[#444]"
               style={{ color: '#e8e8e8' }}
             />
           </div>
@@ -153,32 +211,35 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder="Write your message here..."
-              rows={8}
-              className="w-full bg-transparent outline-none resize-none text-[13px] leading-relaxed"
+              rows={7}
+              className="w-full bg-transparent outline-none resize-none text-[13px] leading-relaxed placeholder:text-[#444]"
               style={{ color: '#e8e8e8' }}
             />
           </div>
 
-          {/* Send button */}
-          <div className="flex items-center justify-between pt-4">
+          {/* Send button + status */}
+          <div className="flex items-center justify-between pt-4 pb-2">
             <button
               onClick={handleSend}
-              disabled={!subject || !body}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-opacity"
+              disabled={!canSend}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
               style={{
-                background: subject && body ? '#0a84ff' : '#2a2a2a',
-                color: subject && body ? '#fff' : '#555',
+                background: canSend ? '#0a84ff' : '#2a2a2a',
+                color: canSend ? '#fff' : '#555',
+                opacity: sendState === 'sending' ? 0.7 : 1,
               }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
               </svg>
-              {sent ? 'Sent!' : 'Send'}
+              {sendState === 'sending' ? 'Sending…' : 'Send'}
             </button>
-            {sent && (
-              <span className="text-[12px]" style={{ color: '#30d158' }}>
-                ✓ Message sent
-              </span>
+
+            {sendState === 'success' && (
+              <span className="text-[12px]" style={{ color: '#30d158' }}>✓ Message sent!</span>
+            )}
+            {sendState === 'error' && (
+              <span className="text-[12px]" style={{ color: '#ff453a' }}>✗ {errorMsg}</span>
             )}
           </div>
         </div>

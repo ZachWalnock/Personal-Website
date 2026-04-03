@@ -9,38 +9,39 @@ interface ContactsAppProps {
 
 const CONTACT_NAMES = [
   'A',
-  'Aaftab', 'Abdul', 'Abhiram', 'Abs', 'Samuel Adams',
-  'Aehren', 'Shamak Agarwal', 'Andres Aguirre',
+  'Adele', 'Muhammad Ali', 'Dwayne Allen',
   'B',
-  'Blake Bennett', 'Jordan Bloom', 'Casey Brooks',
+  'Kobe Bryant', 'Warren Buffett',
   'C',
-  'Chris Carter', 'Alex Chen', 'Morgan Clark',
+  'Mariah Carey', 'Elon Musk\'s Cat',
   'D',
-  'David Daniels', 'Emily Davis',
+  'Leonardo DiCaprio', 'Drake',
+  'E',
+  'Albert Einstein', 'Eminem',
   'F',
-  'Fehad Alghaslan',
+  'Roger Federer',
   'G',
-  'Chris Garcia', 'Sam Green',
+  'Bill Gates', 'Lady Gaga', 'LeBron\'s Grandma',
+  'H',
+  'Stephen Hawking',
   'J',
-  'Jordan James', 'Alex Johnson',
+  'Steve Jobs', 'Michael Jordan', 'Jay-Z',
   'K',
-  'Krush Amrutiya',
+  'Kim Kardashian', 'Kendrick Lamar',
   'L',
-  'Lee Lambert',
+  'LeBron James', 'John Lennon',
   'M',
-  'Morgan Miller',
+  'Elon Musk', 'Barack Obama\'s Chef',
   'N',
-  'Rakib Anam',
-  'P',
-  'Alex Park', 'Sam Peterson',
+  'Nikola Tesla',
+  'O',
+  'Barack Obama', 'Oprah Winfrey',
   'R',
-  'Riley Roberts',
+  'Rihanna', 'Cristiano Ronaldo',
   'S',
-  'Jordan Smith', 'Taylor Stone',
-  'T',
-  'Tj Andrewlevich',
+  'Taylor Swift', 'Will Smith', 'Serena Williams',
   'W',
-  'Zach Walnock',
+  'Kanye West', 'Zach Walnock',
 ]
 
 export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppProps) {
@@ -156,33 +157,55 @@ export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppPro
         onWheel={handleWheel}
         style={{ background: '#1c1c1e' }}
       >
-        {/* Contact header */}
-        <div className="flex items-center gap-4 px-6 pt-6 pb-4" style={{ borderBottom: '1px solid #3a3a3a' }}>
-          {/* Avatar */}
+        {/* Contact header — hero style */}
+        <div className="flex flex-col items-center px-6 pt-8 pb-6" style={{ borderBottom: '1px solid #3a3a3a' }}>
+          {/* Headshot */}
           <div
-            className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-2xl"
-            style={{ background: 'linear-gradient(135deg, #ff6b9d, #c44dff)' }}
+            className="flex-shrink-0 rounded-full overflow-hidden mb-4"
+            style={{
+              width: 140,
+              height: 140,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              border: '3px solid rgba(255,255,255,0.12)',
+            }}
           >
-            ZW
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/headshot.jpg"
+              alt="Zach Walnock"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              draggable={false}
+            />
           </div>
-          <div>
-            <h2 className="text-[22px] font-semibold" style={{ color: '#f0f0f0' }}>
-              Zach Walnock
-            </h2>
-            <div className="flex items-center gap-3 mt-2">
-              <button className="flex items-center gap-1 px-3 py-1 rounded-lg text-[12px]" style={{ background: '#2e2e2e', color: '#0a84ff', border: '1px solid #3a3a3a' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M15 10l4.553-2.277A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                FaceTime
-              </button>
-              <button className="flex items-center gap-1 px-3 py-1 rounded-lg text-[12px]" style={{ background: '#2e2e2e', color: '#0a84ff', border: '1px solid #3a3a3a' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                Call
-              </button>
-            </div>
+
+          {/* Name */}
+          <h2 className="text-[32px] font-bold tracking-tight mb-1" style={{ color: '#f0f0f0' }}>
+            Zach Walnock
+          </h2>
+          <p className="text-[14px] mb-4" style={{ color: '#8a8a8a' }}>
+            Software Developer · San Francisco, CA
+          </p>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3">
+            <button
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[13px] font-medium"
+              style={{ background: '#2e2e2e', color: '#0a84ff', border: '1px solid #3a3a3a' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 10l4.553-2.277A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              FaceTime
+            </button>
+            <button
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[13px] font-medium"
+              style={{ background: '#2e2e2e', color: '#0a84ff', border: '1px solid #3a3a3a' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              Message
+            </button>
           </div>
         </div>
 
@@ -200,14 +223,6 @@ export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppPro
                 (Siri Found in Accounts)
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] w-16 text-right flex-shrink-0" style={{ color: '#8a8a8a' }}>
-              location
-            </span>
-            <p className="text-[13px]" style={{ color: '#e8e8e8' }}>
-              San Francisco, CA
-            </p>
           </div>
         </div>
 

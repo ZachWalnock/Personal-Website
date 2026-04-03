@@ -9,6 +9,7 @@ import ProjectsApp from '@/components/ProjectsApp'
 import MailApp from '@/components/MailApp'
 import PhotosApp from '@/components/PhotosApp'
 import Dock from '@/components/Dock'
+import { GlassFilter } from '@/components/ui/liquid-glass'
 
 type AppState = 'desktop' | 'exploded' | 'focused'
 type AppName = 'contacts' | 'projects' | 'mail' | 'photos'
@@ -30,13 +31,13 @@ const EXPLODED: Record<AppName, [string, string, string, string]> = {
 }
 
 const DESKTOP: Record<AppName, [string, string, string, string]> = {
-  contacts: ['14%', '4%', '72%', '85%'],
+  contacts: ['14%', '3.5%', '72%', '83%'],
   mail:     ['51.5%', '7%', '45.5%', '43%'],    // stays at exploded pos, hidden
   projects: ['3%', '52%', '45.5%', '43%'],       // stays at exploded pos, hidden
   photos:   ['51.5%', '52%', '45.5%', '43%'],    // stays at exploded pos, hidden
 }
 
-const FOCUSED: [string, string, string, string] = ['1%', '0.5%', '98%', '98%']
+const FOCUSED: [string, string, string, string] = ['1%', '3%', '98%', '94%']
 
 function getWindowStyle(app: AppName, appState: AppState, focusedApp: AppName) {
   let pos: [string, string, string, string]
@@ -133,6 +134,13 @@ export default function Page() {
     }
   }, [appState, focusedApp, triggerTransition])
 
+  const handleAppFromDock = useCallback((app: 'contacts' | 'notes' | 'photos') => {
+    // 'notes' dock icon opens the projects app (which is the Notes-style app)
+    const target: AppName = app === 'notes' ? 'projects' : app
+    if (appState === 'focused' && focusedApp === target) return
+    triggerTransition('focused', target)
+  }, [appState, focusedApp, triggerTransition])
+
   const windowTransition = {
     duration: 0.55,
     ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
@@ -167,44 +175,58 @@ export default function Page() {
         style={{ background: 'rgba(0,0,0,1)', zIndex: 5 }}
       />
 
-      {/* macOS menu bar (desktop state) */}
-      <AnimatePresence>
-        {appState === 'desktop' && (
-          <motion.div
-            key="menubar"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-0 left-0 right-0 flex items-center justify-between px-4"
-            style={{
-              height: 24,
-              background: 'rgba(0,0,0,0.25)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              zIndex: 30,
-              fontSize: 13,
-              color: 'rgba(255,255,255,0.9)',
-            }}
-          >
-            <div className="flex items-center gap-5">
-              <span style={{ fontSize: 15 }}>&#63743;</span>
-              {['Contacts', 'File', 'Edit', 'View', 'Card', 'Window', 'Help'].map((item) => (
-                <span
-                  key={item}
-                  className={item === 'Contacts' ? 'font-semibold' : ''}
-                  style={{ fontSize: 12, opacity: 0.9 }}
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center gap-4" style={{ fontSize: 12 }}>
-              <span>Fri Apr 3 12:49 PM</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* macOS menu bar — visible on desktop + focused states */}
+      {(() => {
+        const menuItems: Record<AppName, string[]> = {
+          contacts: ['Contacts', 'File', 'Edit', 'View', 'Card', 'Window', 'Help'],
+          mail:     ['Mail', 'File', 'Edit', 'View', 'Mailbox', 'Message', 'Window', 'Help'],
+          projects: ['Projects', 'File', 'Edit', 'View', 'Window', 'Help'],
+          photos:   ['Photos', 'File', 'Edit', 'View', 'Image', 'Window', 'Help'],
+        }
+        const items = appState === 'focused'
+          ? menuItems[focusedApp]
+          : menuItems['contacts']
+        const show = appState === 'desktop' || appState === 'focused'
+
+        return (
+          <AnimatePresence>
+            {show && (
+              <motion.div
+                key={`menubar-${appState}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="absolute top-0 left-0 right-0 flex items-center justify-between px-4"
+                style={{
+                  height: 24,
+                  background: 'rgba(0,0,0,0.3)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  zIndex: 55,
+                  color: 'rgba(255,255,255,0.9)',
+                }}
+              >
+                <div className="flex items-center gap-5">
+                  <span style={{ fontSize: 15 }}>&#63743;</span>
+                  {items.map((item, i) => (
+                    <span
+                      key={item}
+                      className={i === 0 ? 'font-semibold' : ''}
+                      style={{ fontSize: 12, opacity: 0.9 }}
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4" style={{ fontSize: 12 }}>
+                  <span>Fri Apr 3 12:49 PM</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )
+      })()}
 
       {/* Mission Control hint */}
       <AnimatePresence>
@@ -273,20 +295,31 @@ export default function Page() {
             style={{ bottom: 90, zIndex: 30 }}
           >
             <motion.div
-              animate={{ y: [0, 5, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-              className="flex flex-col items-center gap-1"
+              animate={{ y: [0, 7, 0] }}
+              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+              className="flex flex-col items-center gap-2"
             >
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <span
+                className="px-4 py-1.5 rounded-full text-[13px] font-medium tracking-wide"
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  color: 'rgba(255,255,255,0.9)',
+                  border: '1px solid rgba(255,255,255,0.25)',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                }}
+              >
                 scroll to explore
               </span>
               <svg
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="rgba(255,255,255,0.4)"
-                strokeWidth="2"
+                stroke="rgba(255,255,255,0.75)"
+                strokeWidth="2.5"
+                strokeLinecap="round"
               >
                 <path d="M7 10l5 5 5-5" />
               </svg>
@@ -349,8 +382,11 @@ export default function Page() {
         )
       })}
 
+      {/* SVG filter for liquid glass — must be in DOM */}
+      <GlassFilter />
+
       {/* Dock */}
-      <Dock onMailClick={handleMailFromDock} />
+      <Dock onMailClick={handleMailFromDock} onAppClick={handleAppFromDock} />
     </div>
   )
 }
