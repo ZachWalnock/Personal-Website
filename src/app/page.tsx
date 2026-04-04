@@ -9,7 +9,8 @@ import ProjectsApp from '@/components/ProjectsApp'
 import MailApp from '@/components/MailApp'
 import PhotosApp from '@/components/PhotosApp'
 import Dock from '@/components/Dock'
-import { GlassFilter } from '@/components/ui/liquid-glass'
+import { GlassFilter, GlassEffect } from '@/components/ui/liquid-glass'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 type AppState = 'desktop' | 'exploded' | 'focused'
 type AppName = 'contacts' | 'projects' | 'mail' | 'photos'
@@ -63,7 +64,20 @@ function getWindowStyle(app: AppName, appState: AppState, focusedApp: AppName) {
   return { left, top, width, height, opacity: visible ? 1 : 0 }
 }
 
+const MOBILE_APP_TITLES: Record<AppName, string> = {
+  contacts: 'Contacts',
+  projects: 'Notes',
+  mail: 'Mail',
+  photos: 'Photos',
+}
+
+type MobileScreen = 'home' | 'focused'
+
 export default function Page() {
+  const isMobile = useIsMobile()
+  const [mobileScreen, setMobileScreen] = useState<MobileScreen>('home')
+  const [mobileApp, setMobileApp] = useState<AppName>('contacts')
+
   const [appState, setAppState] = useState<AppState>('desktop')
   const [focusedApp, setFocusedApp] = useState<AppName>('contacts')
   const isAnimating = useRef(false)
@@ -145,6 +159,135 @@ export default function Page() {
     duration: 0.55,
     ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
   }
+
+  // ── Mobile render path ─────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 overflow-hidden" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+        {/* Wallpaper */}
+        <Image src="/wallpaper.jpg" alt="wallpaper" fill priority className="object-cover" style={{ zIndex: 0 }} />
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 100%)', zIndex: 1 }} />
+        <GlassFilter />
+
+        <AnimatePresence mode="wait">
+
+          {mobileScreen === 'home' && (
+            <motion.div
+              key="mobile-home"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ x: '-100%', opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-6 px-8"
+              style={{ zIndex: 10 }}
+            >
+              {/* Name plate */}
+              <div className="text-center mb-2">
+                <p className="font-semibold" style={{ color: 'rgba(255,255,255,0.92)', fontSize: 24 }}>Zach Walnock</p>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>Software Developer</p>
+              </div>
+
+              {/* 2×2 app icon grid */}
+              <div className="grid grid-cols-2 gap-10">
+                {([
+                  { app: 'contacts', label: 'Contacts', img: '/icon-contacts.png' },
+                  { app: 'projects', label: 'Notes',    img: '/icon-notes.webp'   },
+                  { app: 'mail',     label: 'Mail',     img: '/icon-mail.png'     },
+                  { app: 'photos',   label: 'Photos',   img: '/icon-photos.png'   },
+                ] as const).map(({ app, label, img }) => (
+                  <button
+                    key={app}
+                    onClick={() => { setMobileApp(app); setMobileScreen('focused') }}
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <motion.div
+                      whileTap={{ scale: 0.85 }}
+                      className="w-20 h-20 rounded-[22px] overflow-hidden shadow-2xl"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt={label} className="w-full h-full object-cover" draggable={false} />
+                    </motion.div>
+                    <span className="text-[13px] font-medium" style={{ color: 'rgba(255,255,255,0.88)' }}>{label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Social dock */}
+              <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+                <GlassEffect className="rounded-[20px] px-5 py-3">
+                  <div className="flex items-center gap-5">
+                    <motion.a whileTap={{ scale: 0.88 }} href="https://github.com/ZachWalnock" target="_blank" rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-[14px] flex items-center justify-center p-3 shadow-lg"
+                      style={{ background: '#1a1a1a', color: '#fff' }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                      </svg>
+                    </motion.a>
+                    <motion.a whileTap={{ scale: 0.88 }} href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/icon-instagram.png" alt="Instagram" className="w-12 h-12 rounded-[14px] shadow-lg object-cover" draggable={false} />
+                    </motion.a>
+                    <motion.a whileTap={{ scale: 0.88 }} href="https://linkedin.com/in/zachwalnock" target="_blank" rel="noopener noreferrer"
+                      className="w-12 h-12 rounded-[14px] flex items-center justify-center p-3 shadow-lg"
+                      style={{ background: '#0077b5', color: '#fff' }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                      </svg>
+                    </motion.a>
+                  </div>
+                </GlassEffect>
+              </div>
+            </motion.div>
+          )}
+
+          {mobileScreen === 'focused' && (
+            <motion.div
+              key={`mobile-app-${mobileApp}`}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute inset-0 flex flex-col"
+              style={{ zIndex: 20, background: '#1c1c1e' }}
+            >
+              {/* iOS-style top bar */}
+              <div
+                className="flex-shrink-0 flex items-center px-4 pb-3"
+                style={{ paddingTop: 56, borderBottom: '1px solid #3a3a3a' }}
+              >
+                <button
+                  onClick={() => setMobileScreen('home')}
+                  className="flex items-center gap-1"
+                  style={{ color: '#0a84ff' }}
+                >
+                  <svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8.5 1L1.5 8.5L8.5 16" />
+                  </svg>
+                  <span style={{ fontSize: 17 }}></span>
+                </button>
+                <span className="flex-1 text-center font-semibold" style={{ color: '#f0f0f0', fontSize: 17 }}>
+                  {MOBILE_APP_TITLES[mobileApp]}
+                </span>
+                <div style={{ width: 40 }} />
+              </div>
+
+              {/* App content */}
+              <div className="flex-1 overflow-hidden">
+                {mobileApp === 'contacts' && <ContactsApp isFocused={false} onExitFocused={() => setMobileScreen('home')} isMobile />}
+                {mobileApp === 'projects' && <ProjectsApp isFocused={false} onExitFocused={() => setMobileScreen('home')} isMobile />}
+                {mobileApp === 'mail'     && <MailApp     isFocused={false} onExitFocused={() => setMobileScreen('home')} isMobile />}
+                {mobileApp === 'photos'   && <PhotosApp   isFocused={false} onExitFocused={() => setMobileScreen('home')} isMobile />}
+              </div>
+            </motion.div>
+          )}
+
+        </AnimatePresence>
+      </div>
+    )
+  }
+  // ── End mobile render path ─────────────────────────────────────────────────
 
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ cursor: 'default' }}>

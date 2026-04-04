@@ -5,6 +5,7 @@ import { useRef, useCallback } from 'react'
 interface ContactsAppProps {
   isFocused: boolean
   onExitFocused: () => void
+  isMobile?: boolean
 }
 
 const CONTACT_NAMES = [
@@ -44,7 +45,7 @@ const CONTACT_NAMES = [
   'Kanye West', 'Zach Walnock',
 ]
 
-export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppProps) {
+export default function ContactsApp({ isFocused, onExitFocused, isMobile }: ContactsAppProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const exitDelta = useRef(0)
 
@@ -73,7 +74,7 @@ export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppPro
   return (
     <div className="flex h-full" style={{ background: '#1c1c1e', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Sidebar */}
-      <div
+      {!isMobile && <div
         className="flex-shrink-0 overflow-y-auto"
         style={{ width: 160, background: '#252525', borderRight: '1px solid #3a3a3a' }}
       >
@@ -104,10 +105,10 @@ export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppPro
             Last Import
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Contact list */}
-      <div
+      {!isMobile && <div
         className="flex-shrink-0 overflow-y-auto"
         style={{ width: 180, background: '#2a2a2a', borderRight: '1px solid #3a3a3a' }}
       >
@@ -148,7 +149,7 @@ export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppPro
             </div>
           )
         })}
-      </div>
+      </div>}
 
       {/* Contact detail */}
       <div
@@ -277,7 +278,7 @@ export default function ContactsApp({ isFocused, onExitFocused }: ContactsAppPro
             Always building. Always learning. Let&apos;s make something great together.
           </p>
 
-          {isFocused && (
+          {isFocused && !isMobile && (
             <p className="text-[11px] text-center mt-8 pb-2" style={{ color: '#555' }}>
               ↓ Scroll to return to overview
             </p>

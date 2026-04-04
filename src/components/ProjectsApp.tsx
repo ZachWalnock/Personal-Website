@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react'
 interface ProjectsAppProps {
   isFocused: boolean
   onExitFocused: () => void
+  isMobile?: boolean
 }
 
 type Block =
@@ -175,7 +176,7 @@ function NoteContent({ blocks }: { blocks: Block[] }) {
   )
 }
 
-export default function ProjectsApp({ isFocused, onExitFocused }: ProjectsAppProps) {
+export default function ProjectsApp({ isFocused, onExitFocused, isMobile }: ProjectsAppProps) {
   const [selectedFolder, setSelectedFolder] = useState<FolderId>('projects')
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
 
@@ -231,7 +232,7 @@ export default function ProjectsApp({ isFocused, onExitFocused }: ProjectsAppPro
       style={{ background: '#1c1c1c', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       {/* Sidebar */}
-      <div
+      {!isMobile && <div
         className="flex-shrink-0 flex flex-col pt-4 pb-4"
         style={{ width: 160, background: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}
       >
@@ -262,7 +263,7 @@ export default function ProjectsApp({ isFocused, onExitFocused }: ProjectsAppPro
             <span>New Folder</span>
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* Main area — gallery or note detail */}
       <div className="flex-1 overflow-hidden flex flex-col" style={{ background: '#1e1e1e' }}>
@@ -309,11 +310,30 @@ export default function ProjectsApp({ isFocused, onExitFocused }: ProjectsAppPro
               className="flex-1 overflow-y-auto px-5 py-5"
               onWheel={handleGalleryScroll}
             >
-              <p className="text-[12px] font-semibold mb-4" style={{ color: '#666' }}>
-                {FOLDERS.find((f) => f.id === selectedFolder)!.label}
-              </p>
+              {isMobile ? (
+                <div className="flex gap-2 mb-4">
+                  {FOLDERS.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => { setSelectedFolder(f.id); setSelectedNote(null) }}
+                      className="flex-1 py-1.5 rounded-lg text-[13px] font-medium"
+                      style={{
+                        background: selectedFolder === f.id ? '#3a3a3a' : 'transparent',
+                        color: selectedFolder === f.id ? '#fff' : '#888',
+                        border: '1px solid #3a3a3a',
+                      }}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[12px] font-semibold mb-4" style={{ color: '#666' }}>
+                  {FOLDERS.find((f) => f.id === selectedFolder)!.label}
+                </p>
+              )}
 
-              <div className="grid grid-cols-4 gap-3">
+              <div className={isMobile ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-4 gap-3'}>
                 {activeNotes.map((note) => (
                   <motion.button
                     key={note.id}
@@ -364,7 +384,7 @@ export default function ProjectsApp({ isFocused, onExitFocused }: ProjectsAppPro
                 ))}
               </div>
 
-              {isFocused && (
+              {isFocused && !isMobile && (
                 <p className="text-[11px] text-center mt-6 pb-2" style={{ color: '#333' }}>
                   ↓ Scroll to return
                 </p>
@@ -379,7 +399,7 @@ export default function ProjectsApp({ isFocused, onExitFocused }: ProjectsAppPro
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.22 }}
               ref={noteScrollRef}
-              className="flex-1 overflow-y-auto px-8 py-6"
+              className={`flex-1 overflow-y-auto py-6 ${isMobile ? 'px-5' : 'px-8'}`}
               style={{ background: '#1e1c18' }}
               onWheel={handleNoteScroll}
             >
@@ -415,7 +435,7 @@ export default function ProjectsApp({ isFocused, onExitFocused }: ProjectsAppPro
 
               <NoteContent blocks={selectedNote.blocks} />
 
-              {isFocused && (
+              {isFocused && !isMobile && (
                 <p className="text-[11px] text-center mt-8 pb-2" style={{ color: '#333' }}>
                   ↓ Scroll to go back
                 </p>

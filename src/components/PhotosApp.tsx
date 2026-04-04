@@ -5,6 +5,7 @@ import { useState, useRef, useCallback } from 'react'
 interface PhotosAppProps {
   isFocused: boolean
   onExitFocused: () => void
+  isMobile?: boolean
 }
 
 interface Photo {
@@ -60,7 +61,7 @@ const PEOPLE = [
   { src: '/people-milo.png',    name: 'Milo' },
 ]
 
-export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) {
+export default function PhotosApp({ isFocused, onExitFocused, isMobile }: PhotosAppProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const exitDelta = useRef(0)
@@ -92,7 +93,7 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
   return (
     <div className="flex h-full" style={{ background: '#1c1c1e', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Sidebar */}
-      <div
+      {!isMobile && <div
         className="flex-shrink-0 py-4 overflow-y-auto"
         style={{ width: 170, background: '#252525', borderRight: '1px solid #3a3a3a' }}
       >
@@ -136,7 +137,7 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
             ))}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#1c1c1e' }}>
@@ -196,19 +197,38 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
                 {selectedPhoto.label}
               </p>
             </div>
-            {isFocused && (
+            {isFocused && !isMobile && (
               <p className="text-[11px] text-center pb-6" style={{ color: '#333' }}>↓ Scroll to go back</p>
             )}
           </div>
         ) : (
           /* Grid view */
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pb-4" onWheel={handleWheel}>
+            {/* People strip — mobile only */}
+            {isMobile && (
+              <div className="pt-4 pb-2 flex gap-4 overflow-x-auto">
+                {PEOPLE.map((person) => (
+                  <div key={person.name} className="flex flex-col items-center gap-1 flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={person.src}
+                      alt={person.name}
+                      className="rounded-full object-cover"
+                      style={{ width: 56, height: 56, border: '2px solid rgba(255,255,255,0.15)' }}
+                      draggable={false}
+                    />
+                    <span className="text-[11px]" style={{ color: '#aaa' }}>{person.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Featured large photo strip */}
             <div className="pt-4 pb-5">
               <p className="text-[11px] font-semibold mb-2" style={{ color: '#8a8a8a' }}>
                 {ALL_PHOTOS.length} Photos
               </p>
-              <div className="grid grid-cols-5 gap-[2px]">
+              <div className={isMobile ? 'grid grid-cols-3 gap-[2px]' : 'grid grid-cols-5 gap-[2px]'}>
                 {ALL_PHOTOS.map((photo) => (
                   <button
                     key={photo.src}
@@ -234,7 +254,7 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
                 <p className="text-[11px] font-semibold mb-2" style={{ color: '#8a8a8a' }}>
                   {group.month}
                 </p>
-                <div className="grid grid-cols-5 gap-[2px]">
+                <div className={isMobile ? 'grid grid-cols-3 gap-[2px]' : 'grid grid-cols-5 gap-[2px]'}>
                   {group.photos.map((photo) => (
                     <button
                       key={photo.src}
@@ -255,7 +275,7 @@ export default function PhotosApp({ isFocused, onExitFocused }: PhotosAppProps) 
               </div>
             ))}
 
-            {isFocused && (
+            {isFocused && !isMobile && (
               <p className="text-[11px] text-center py-4" style={{ color: '#333' }}>
                 ↓ Scroll to return to overview
               </p>

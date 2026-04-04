@@ -5,6 +5,7 @@ import { useState, useRef, useCallback } from 'react'
 interface MailAppProps {
   isFocused: boolean
   onExitFocused: () => void
+  isMobile?: boolean
 }
 
 const INBOX = [
@@ -17,7 +18,7 @@ const INBOX = [
 
 type SendState = 'idle' | 'sending' | 'success' | 'error'
 
-export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
+export default function MailApp({ isFocused, onExitFocused, isMobile }: MailAppProps) {
   const [senderName, setSenderName] = useState('')
   const [senderEmail, setSenderEmail] = useState('')
   const [subject, setSubject] = useState('')
@@ -86,7 +87,7 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
   return (
     <div className="flex h-full" style={{ background: '#1c1c1e', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Sidebar */}
-      <div
+      {!isMobile && <div
         className="flex-shrink-0"
         style={{ width: 160, background: '#252525', borderRight: '1px solid #3a3a3a' }}
       >
@@ -120,10 +121,10 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
             </div>
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* Message list */}
-      <div
+      {!isMobile && <div
         className="flex-shrink-0 overflow-y-auto"
         style={{ width: 220, background: '#212121', borderRight: '1px solid #3a3a3a' }}
       >
@@ -150,7 +151,7 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
             <p className="text-[10px] truncate" style={{ color: '#666' }}>{msg.preview}</p>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* Compose */}
       <div ref={scrollRef} className="flex-1 flex flex-col overflow-y-auto" onWheel={handleWheel}>
@@ -244,7 +245,7 @@ export default function MailApp({ isFocused, onExitFocused }: MailAppProps) {
           </div>
         </div>
 
-        {isFocused && (
+        {isFocused && !isMobile && (
           <p className="text-[11px] text-center py-4" style={{ color: '#333' }}>
             ↓ Scroll to return to overview
           </p>
