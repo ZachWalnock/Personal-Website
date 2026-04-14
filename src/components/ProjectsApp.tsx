@@ -25,6 +25,83 @@ interface Note {
 
 const PROJECTS: Note[] = [
   {
+    id: 'invoice-tax-classifier',
+    title: 'Invoice Tax Exemption Classifier',
+    preview: 'End-to-end classification system determining whether an invoice qualifies for tax exemption and the specific legal basis — with confidence tiers and human review.',
+    date: 'Recent',
+    image: '/Tax.jpg',
+    tags: ['LLM Pipeline', 'Confidence Tiers', 'Human Review', 'Unstructured Docs'],
+    blocks: [
+      { type: 'p', text: 'Built an end-to-end classification system that determines whether an invoice qualifies for tax exemption — and if so, the specific legal basis for that exemption (e.g., repairs to real property, purchase of work apparel). The input was unstructured: invoices and supporting documents with no standard format, frequently containing handwritten annotations and ambiguous line items.' },
+      { type: 'h3', text: 'The Problem' },
+      { type: 'p', text: 'Tax exemption classification is a judgment call with real financial consequences — the right answer isn\'t always derivable from a single field, but from the full context of the document. Like GL coding, it requires semantic understanding of unstructured inputs.' },
+      { type: 'h3', text: 'How It Works' },
+      { type: 'p', text: 'The system surfaces a confidence level alongside each decision, flagging low-confidence cases for human review rather than forcing a prediction. The review interface was designed for non-technical staff: plain-English explanations of each decision, organized so reviewers could quickly accept, question, or override without needing to understand the model.' },
+      { type: 'h3', text: 'What It Demonstrated' },
+      { type: 'p', text: 'This project demonstrated our ability to handle the full problem: messy, real-world inputs; semantic classification that requires context, not just pattern matching; and a human-in-the-loop workflow built around the realities of the people actually doing the review.' },
+    ],
+  },
+  {
+    id: 'code-detector',
+    title: 'AI & Private Data Detector',
+    preview: 'Classification system analyzing Python, JS, and TS code snippets to detect AI usage and private data exposure — with line-level explainability.',
+    date: 'Recent',
+    image: '/Pytorch.webp',
+    tags: ['Ensemble LLM', 'Line-level Explainability', 'Multi-class Detection', 'Scalable Pipeline'],
+    blocks: [
+      { type: 'p', text: 'Designed and built a classification system that analyzes code snippets — across Python, JavaScript, and TypeScript — to detect two things: whether the code contains AI usage, and whether it exposes private data. Beyond a binary flag, the system identifies the specific lines responsible, giving reviewers an actionable, localized signal rather than a vague verdict.' },
+      { type: 'h3', text: 'The Engineering Challenge' },
+      { type: 'p', text: 'A single line of code can\'t always be evaluated without understanding its surrounding context. We solved this by building an ensemble of LLMs and lightweight classification models that distributes inference intelligently: reserving heavier LLM calls for ambiguous cases and routing clear-cut ones through faster, cheaper models.' },
+      { type: 'h3', text: 'Outcome' },
+      { type: 'p', text: 'The result was a system that was both accurate and economically viable at scale — a tradeoff that matters equally when processing 10,000 GL entries a month. This project also sharpened our approach to explainability: outputs needed to be specific enough that a non-engineer could understand exactly what was flagged and why.' },
+    ],
+  },
+  {
+    id: 'red-cross-prediction',
+    title: 'Young Donor Turnout Prediction',
+    preview: 'Predictive model for the American Red Cross forecasting which blood drive sites produce the highest young donor turnout. R² of 0.87.',
+    date: 'American Red Cross',
+    image: '/RedCross.jpg',
+    tags: ['Predictive Modeling', 'Tabular Data', 'Model Evaluation', 'Stakeholder Collab'],
+    blocks: [
+      { type: 'p', text: 'The American Red Cross needed to forecast which blood drive sites would produce the highest turnout of young donors, using historical site-level data. We built a predictive model on tabular data that achieved an R² of 0.87 — meaning it explained roughly 87% of the variance in young donor turnout across sites.' },
+      { type: 'h3', text: 'Why It\'s Relevant' },
+      { type: 'p', text: 'The rigor we applied to model evaluation at Red Cross — understanding what the number means, where it breaks down, and how to interpret it honestly for a non-technical stakeholder — is directly transferable to how we\'d approach ongoing performance measurement for any classification system.' },
+      { type: 'h3', text: 'Collaboration' },
+      { type: 'p', text: 'It also reflects our comfort working directly with domain experts to translate a business question into a well-scoped modeling problem — the same kind of collaboration that shapes scope refinement with clients.' },
+    ],
+  },
+  {
+    id: 'saveware-invoice-classifier',
+    title: 'Invoice Classification Model',
+    preview: 'Custom LayoutLMV3 classifier to filter true invoices before hitting Microsoft\'s pipeline — reducing document processing costs at Saveware.',
+    date: 'Saveware',
+    image: '/HuggingFace.png',
+    tags: ['LayoutLMV3', 'PyTorch', 'Azure ML', 'Document AI'],
+    blocks: [
+      { type: 'p', text: 'At Saveware, document processing costs were driven up by sending every incoming file through Microsoft\'s invoice model, even when many were not invoices. I trained a custom classification model using LayoutLMV3 to identify true invoices before they hit that pipeline.' },
+      { type: 'h3', text: 'The Solution' },
+      { type: 'p', text: 'The model was fine-tuned on labeled document data and deployed through Azure ML, with a PyTorch training stack and Azure cloud infrastructure. This allowed us to filter out irrelevant documents early and significantly reduce unnecessary API usage.' },
+      { type: 'h3', text: 'Outcome' },
+      { type: 'p', text: 'The result was lower overall processing costs while maintaining accuracy — a clean example of applying targeted ML to reduce operational overhead at scale.' },
+    ],
+  },
+  {
+    id: 'cranium-chatbot',
+    title: 'Internal Knowledge Chatbot',
+    preview: 'Unified internal chatbot at Cranium connecting GitHub, HubSpot, sales call transcripts, and internal docs — handled 2,000+ queries in its first month.',
+    date: 'Cranium',
+    image: '/RobotEmoji.png',
+    tags: ['RAG', 'Internal Tools', 'Multi-source Retrieval', 'NLP'],
+    blocks: [
+      { type: 'p', text: 'At Cranium, teams were constantly searching across disconnected sources — GitHub, sales call transcripts, HubSpot, and internal docs — to answer routine questions. I built an internal chatbot that unified these data sources into a single interface, allowing employees to query company knowledge in natural language.' },
+      { type: 'h3', text: 'How It Works' },
+      { type: 'p', text: 'The system used retrieval-based techniques to surface relevant context and generate accurate responses across all connected data sources — GitHub repositories, CRM data, transcripts, and documentation.' },
+      { type: 'h3', text: 'Impact' },
+      { type: 'p', text: 'Within the first month, the chatbot handled over 2,000 queries and became a go-to tool for quickly accessing information, reducing time spent digging through systems and improving team productivity.' },
+    ],
+  },
+  {
     id: 'tutorai',
     title: 'TutorAI',
     preview: '3rd place & $7,000 at the NittanyAI Challenge. An AI-powered platform helping students search course materials faster.',
@@ -335,52 +412,51 @@ export default function ProjectsApp({ isFocused, onExitFocused, isMobile }: Proj
 
               <div className={isMobile ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-4 gap-3'}>
                 {activeNotes.map((note) => (
-                  <motion.button
-                    key={note.id}
-                    onClick={() => setSelectedNote(note)}
-                    className="text-left rounded-xl overflow-hidden group"
-                    style={{
-                      background: '#2a2828',
-                      border: '1px solid #3a3a3a',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    }}
-                    whileHover={{
-                      scale: 1.02,
-                      borderColor: '#c8a84a',
-                      transition: { duration: 0.15 },
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {/* Thumbnail — square aspect ratio */}
-                    <div className="w-full" style={{ aspectRatio: '1 / 1', background: '#242424' }}>
+                  <div key={note.id} className="flex flex-col">
+                    <motion.button
+                      onClick={() => setSelectedNote(note)}
+                      className="w-full rounded-xl overflow-hidden group"
+                      style={{
+                        aspectRatio: '1 / 1',
+                        background: '#242424',
+                        border: '1px solid #3a3a3a',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      }}
+                      whileHover={{
+                        scale: 1.02,
+                        borderColor: '#c8a84a',
+                        transition: { duration: 0.15 },
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       {note.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={note.image}
                           alt={note.title}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                           draggable={false}
                         />
                       ) : (
                         <div
-                          className="w-full h-full flex items-start p-4"
+                          className="w-full h-full flex items-start p-3"
                           style={{ background: '#2e2e2e' }}
                         >
-                          <p className="text-[11px] leading-relaxed line-clamp-6" style={{ color: '#888' }}>
+                          <p className="text-[10px] leading-relaxed line-clamp-6" style={{ color: '#888' }}>
                             {note.preview}
                           </p>
                         </div>
                       )}
-                    </div>
+                    </motion.button>
 
-                    {/* Card footer */}
-                    <div className="px-2 py-2">
+                    {/* Title below the square */}
+                    <div className="mt-1.5 px-0.5">
                       <p className="text-[11px] font-semibold truncate mb-[1px]" style={{ color: '#f0f0f0' }}>
                         {note.title}
                       </p>
                       <p className="text-[10px]" style={{ color: '#666' }}>{note.date}</p>
                     </div>
-                  </motion.button>
+                  </div>
                 ))}
               </div>
 
