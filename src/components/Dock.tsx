@@ -45,7 +45,7 @@ const DOCK_ITEMS = [
   {
     id: 'github',
     label: 'GitHub',
-    href: 'https://github.com',
+    href: 'https://github.com/ZachWalnock',
     imgSrc: null,
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
